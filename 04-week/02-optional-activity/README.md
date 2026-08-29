@@ -1,6 +1,6 @@
 # Semana 4 – Inventario de datos y ciclo de vida del proyecto
 
-> Ejemplo/plantilla de entrega. Ajusta el proceso, las fuentes de datos y las cifras si tu caso real es distinto.
+
 
 ## 1. Problema y pregunta de datos
 
