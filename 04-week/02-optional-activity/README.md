@@ -63,3 +63,14 @@ flowchart LR
 
 Manufacturing lines often experience unplanned equipment downtime caused by unexpected mechanical failures, which increases repair costs and disrupts production schedules. This project aims to determine whether it is possible to predict, in advance, which machines are most likely to fail within the next seven days by analyzing historical maintenance and sensor data. The data required includes structured maintenance and production records, semi-structured IoT sensor readings such as vibration and temperature, and unstructured sources like technician notes, equipment manuals, and inspection images. Because sensors continuously generate large volumes of data at high speed from many machines, this project qualifies as a Big Data problem. The analytics approach will move from descriptive dashboards of past failures to predictive models that estimate failure probability, and finally to prescriptive recommendations for scheduling preventive maintenance.
 
+## Referencias
+
+DASCA. (s.f.). *A step-by-step guide to the data science workflow*. Data Science Council of America. https://www.dasca.org/world-of-data-science/article/a-step-by-step-guide-to-the-data-science-workflow
+
+Deloitte Insights. (2017). *Industry 4.0 and predictive technologies for asset maintenance*. Deloitte. https://www.deloitte.com/us/en/insights/industry/manufacturing-industrial-products/industry-4-0/using-predictive-technologies-for-asset-maintenance.html
+
+Gartner. (s.f.-a). *Predictive analytics*. Gartner Information Technology Glossary. https://www.gartner.com/en/information-technology/glossary/predictive-analytics
+
+Gartner. (s.f.-b). *Prescriptive analytics*. Gartner Information Technology Glossary. https://www.gartner.com/en/information-technology/glossary/prescriptive-analytics
+
+IBM. (s.f.). *What is big data?* IBM Think. https://www.ibm.com/think/topics/big-data
