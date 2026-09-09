@@ -37,3 +37,9 @@ Fuente  →  Almacenamiento  →  Análisis  →  Visualización
 Descriptive analytics looks at data from the past to understand what already happened, for example the sales from last month.
 
 Predictive analytics uses that same data to try to guess what could happen in the future, like how many products the store will sell next month.
+
+## Referencias
+
+IBM. (2025). Structured vs. unstructured data: What's the difference? IBM Think. https://www.ibm.com/think/topics/structured-vs-unstructured-data
+
+IBM. (2026). What is predictive analytics? IBM Think. https://www.ibm.com/think/topics/predictive-analytics
