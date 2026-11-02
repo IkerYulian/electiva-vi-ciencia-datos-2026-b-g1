@@ -1,0 +1,85 @@
+EVIDENCIA DE OPTIMIZACION - PostgreSQL 16, tabla ventas (3.000.000 filas, 2020-2024)
+Filas que cumplen el filtro (2024): 600.531 (20% de la tabla)
+Condiciones: max_parallel_workers_per_gather = 0 (plan comparable); mejor de 3 ejecuciones con cache caliente.
+
+Variante                                         Plan                        Tiempo
+-----------------------------------------------  --------------------------  ---------
+ANTES  (EXTRACT en WHERE, sin indice)            Seq Scan                    578.6 ms
+ANTES  (EXTRACT en WHERE, CON indice)            Seq Scan (indice ignorado)  538.6 ms
+Solo rango sargable (sin indice)                 Seq Scan                    346.2 ms
+DESPUES (rango + indice cubriente)               Index Only Scan             214.6 ms   (2.7x mas rapida)
+
+Buffers leidos (primera ejecucion, cache fria): ANTES 19.109 paginas -> DESPUES 2.305 paginas (-88%)
+Heap Fetches en el Index Only Scan: 0 (nunca toco la tabla)
+Equivalencia verificada: total 2024 = 66.070.130,94 con ambas consultas.
+
+----------------------------------------------------------------------
+SALIDA COMPLETA DE EXPLAIN (ANALYZE, BUFFERS) - primera ejecucion (cache fria)
+----------------------------------------------------------------------
+===== ANTES (EXTRACT en WHERE, sin indice) =====
+                                                      QUERY PLAN                                                      
+----------------------------------------------------------------------------------------------------------------------
+ HashAggregate  (cost=64221.50..64248.89 rows=1826 width=64) (actual time=627.843..627.856 rows=12 loops=1)
+   Group Key: EXTRACT(month FROM fecha)
+   Batches: 1  Memory Usage: 73kB
+   Buffers: shared hit=11540 read=7569
+   ->  Seq Scan on ventas  (cost=0.00..64146.50 rows=15000 width=38) (actual time=0.015..512.387 rows=600531 loops=1)
+         Filter: (EXTRACT(year FROM fecha) = '2024'::numeric)
+         Rows Removed by Filter: 2399469
+         Buffers: shared hit=11540 read=7569
+ Planning:
+   Buffers: shared hit=80 read=3
+ Planning Time: 0.279 ms
+ Execution Time: 627.909 ms
+(12 rows)
+
+===== INTERMEDIO (rango sargable, sin indice) =====
+                                                         QUERY PLAN                                                          
+-----------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=70253.07..70257.64 rows=1826 width=40) (actual time=362.974..362.976 rows=12 loops=1)
+   Sort Key: (date_trunc('month'::text, (fecha)::timestamp with time zone))
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=11575 read=7537
+   ->  HashAggregate  (cost=70122.20..70154.16 rows=1826 width=40) (actual time=362.929..362.940 rows=12 loops=1)
+         Group Key: date_trunc('month'::text, (fecha)::timestamp with time zone)
+         Batches: 1  Memory Usage: 73kB
+         Buffers: shared hit=11572 read=7537
+         ->  Seq Scan on ventas  (cost=0.00..67115.60 rows=601320 width=14) (actual time=0.012..279.754 rows=600531 loops=1)
+               Filter: ((fecha >= '2024-01-01'::date) AND (fecha < '2025-01-01'::date))
+               Rows Removed by Filter: 2399469
+               Buffers: shared hit=11572 read=7537
+ Planning:
+   Buffers: shared hit=19
+ Planning Time: 0.102 ms
+ Execution Time: 363.010 ms
+(16 rows)
+
+CREATE INDEX
+VACUUM
+===== DESPUES (rango + indice cubriente) =====
+                                                                           QUERY PLAN                                                                            
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=26503.69..26508.26 rows=1826 width=40) (actual time=235.016..235.019 rows=12 loops=1)
+   Sort Key: (date_trunc('month'::text, (fecha)::timestamp with time zone))
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=3 read=2302 written=1590
+   ->  HashAggregate  (cost=26372.82..26404.78 rows=1826 width=40) (actual time=234.991..235.006 rows=12 loops=1)
+         Group Key: date_trunc('month'::text, (fecha)::timestamp with time zone)
+         Batches: 1  Memory Usage: 73kB
+         Buffers: shared hit=3 read=2302 written=1590
+         ->  Index Only Scan using idx_ventas_fecha_monto on ventas  (cost=0.43..23468.76 rows=580813 width=14) (actual time=0.026..148.755 rows=600531 loops=1)
+               Index Cond: ((fecha >= '2024-01-01'::date) AND (fecha < '2025-01-01'::date))
+               Heap Fetches: 0
+               Buffers: shared hit=3 read=2302 written=1590
+ Planning:
+   Buffers: shared hit=20 read=3
+ Planning Time: 0.152 ms
+ Execution Time: 235.086 ms
+(16 rows)
+
+===== VERIFICACION DE EQUIVALENCIA =====
+ total_antes | total_despues 
+-------------+---------------
+ 66070130.94 |   66070130.94
+(1 row)
+
